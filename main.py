@@ -291,7 +291,7 @@ def _generate_plots(
     # ------ Figure 4 : Scatter IM nested vs Johnson ------
     fig, axes = plt.subplots(1, 3, figsize=(16, 5))
     for ax, idx, t_label in zip(axes, [0, 26, 52], ['t=0', 't=0.5Y', 't=1Y']):
-        ax.scatter(im_nested[:, idx], im_johnson[:, idx], alpha=0.3, s=10)
+        ax.scatter(im_nested[:, idx] if idx!=0 else np.mean(im_nested[:, 0]) * np.ones(1000), im_johnson[:, idx], alpha=0.3, s=10)
         all_vals = np.concatenate([im_nested[:, idx], im_johnson[:, idx]])
         lo, hi = np.min(all_vals) - 1, np.max(all_vals) + 1
         ax.plot([lo, hi], [lo, hi], 'r--', linewidth=1.5, label='y = x')
