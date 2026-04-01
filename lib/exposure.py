@@ -6,7 +6,7 @@ import numpy as np
 from config.parameters import TIME_GRID, T_EEPE, DELTA_T
 
 
-def compute_exposure(mtm: np.ndarray) -> np.ndarray:
+def compute_exposure(mtm: np.ndarray, IM = 0.0) -> np.ndarray:
     """Exposition : E(t) = max(0, MtM(t)).
 
     Args:
@@ -15,19 +15,18 @@ def compute_exposure(mtm: np.ndarray) -> np.ndarray:
     Returns:
         Exposition, même shape.
     """
-    return np.maximum(0.0, mtm)
+    return np.maximum(0.0, mtm-IM)
 
 
-def compute_ee(mtm_matrix: np.ndarray) -> np.ndarray:
+def compute_ee(exposure: np.ndarray) -> np.ndarray:
     """Expected Exposure : EE(t_j) = mean_i(max(0, MtM_i(t_j))).
 
     Args:
-        mtm_matrix: MtM, shape (n_outer, n_steps).
+        exposure: Exposition, shape (n_outer, n_steps).
 
     Returns:
         ee: Expected Exposure, shape (n_steps,).
     """
-    exposure = compute_exposure(mtm_matrix)
     return np.mean(exposure, axis=0)
 
 
@@ -63,7 +62,7 @@ def compute_eepe(eee: np.ndarray, time_grid: np.ndarray = TIME_GRID) -> float:
     return float(np.trapezoid(eee, time_grid) / T)
 
 
-def compute_all_exposure_metrics(mtm_matrix: np.ndarray, time_grid: np.ndarray = TIME_GRID) -> dict:
+def compute_all_exposure_metrics(mtm_matrix: np.ndarray, IM: float = 0.0, time_grid: np.ndarray = TIME_GRID) -> dict:
     """Calcule toutes les métriques d'exposition.
 
     Args:
@@ -73,7 +72,8 @@ def compute_all_exposure_metrics(mtm_matrix: np.ndarray, time_grid: np.ndarray =
     Returns:
         Dictionnaire avec les clés : "ee", "eee", "eepe".
     """
-    ee = compute_ee(mtm_matrix)
+    e=compute_exposure(mtm_matrix, IM)
+    ee = compute_ee(e)
     eee = compute_eee(ee)
     eepe = compute_eepe(eee, time_grid)
     return {"ee": ee, "eee": eee, "eepe": eepe}

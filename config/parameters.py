@@ -33,8 +33,8 @@ TIME_GRID: np.ndarray = np.linspace(0.0, T_EEPE, N_T + 1)
 # ============================================================
 # Paramètres Monte Carlo
 # ============================================================
-N_OUTER: int = 500   # Scénarios extérieurs
-N_INNER: int = 500    # Scénarios intérieurs (nested MC)
+N_OUTER: int = 1000   # Scénarios extérieurs
+N_INNER: int = 1000    # Scénarios intérieurs (nested MC)
 
 # ============================================================
 # Niveau de confiance pour l'IM

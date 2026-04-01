@@ -101,7 +101,7 @@ def main():
         )
 
     print(f"  IM nested shape : {im_nested.shape}")
-    print(f"  IM moyen : {np.mean(im_nested):.4f}")
+    print(f"  IM median : {np.median(im_nested):.4f}")
     print(f"  IM negatif : {100 * np.mean(im_nested < 0):.1f}% des noeuds")
 
     # Exposition avec IM nested
@@ -124,7 +124,7 @@ def main():
         im_johnson = compute_im_johnson(paths, TIME_GRID)
 
     print(f"  IM Johnson shape : {im_johnson.shape}")
-    print(f"  IM moyen : {np.mean(im_johnson):.4f}")
+    print(f"  IM median : {np.median(im_johnson):.4f}")
 
     # Exposition avec IM Johnson
     with Timer("Exposition avec IM Johnson"):
@@ -153,7 +153,7 @@ def main():
         ["Reduction EEPE",
          f"{100 * (1 - eepe_nested_im / eepe_no_im):.1f}%",
          f"{100 * (1 - eepe_johnson_im / eepe_no_im):.1f}%"],
-        ["IM moyen", f"{np.mean(im_nested):.4f}", f"{np.mean(im_johnson):.4f}"],
+        ["IM median", f"{np.median(im_nested):.4f}", f"{np.median(im_johnson):.4f}"],
         ["MAE IM (noeud/noeud)", "ref", f"{mae_im:.4f}"],
         ["Temps de calcul", f"{t_nested.elapsed:.1f}s", f"{t_johnson.elapsed:.1f}s"],
         ["Ratio de vitesse", "1x", f"{t_nested.elapsed / max(t_johnson.elapsed, 0.01):.0f}x"],
@@ -309,15 +309,23 @@ def _generate_plots(
     # ------ Figure 5 : IM moyen + MAE ------
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
-    ax1.plot(TIME_GRID, np.mean(im_nested, axis=0), 'b-', linewidth=2,
-             label='IM nested MC')
-    ax1.plot(TIME_GRID, np.mean(im_johnson, axis=0), 'r--', linewidth=2,
-             label='IM Johnson')
+    # 3) IM median
+    im_nested_q05_t = np.quantile(im_nested, 0.05, axis=0)
+    im_nested_q95_t = np.quantile(im_nested, 0.95, axis=0)
+    im_johnson_q05_t = np.quantile(im_johnson, 0.05, axis=0)
+    im_johnson_q95_t = np.quantile(im_johnson, 0.95, axis=0)
+    im_nested_median=np.median(im_nested,axis=0)
+    im_johnson_median=np.median(im_johnson,axis=0)
+    ax1.plot(TIME_GRID, im_nested_median, 'b-', linewidth=2, label='median IM nested MC')
+    ax1.fill_between(TIME_GRID, im_nested_q05_t, im_nested_q95_t, alpha=0.2, color='blue', label='Bande Nested Q5%-Q95%')
+    ax1.fill_between(TIME_GRID, im_johnson_q05_t, im_johnson_q95_t, alpha=0.2, color='red', label='Bande Johnson Q5%-Q95%')
+    ax1.plot(TIME_GRID, im_johnson_median, 'r--', linewidth=2, label='median IM Johnson')
     ax1.set_xlabel('Temps (annees)')
-    ax1.set_ylabel('IM moyen')
-    ax1.set_title('IM moyen au cours du temps')
+    ax1.set_ylabel('IM median')
+    ax1.set_title('IM median au cours du temps')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
+    # Profil median avec bandes de confiance
 
     ax2.plot(TIME_GRID, mae_by_date, 'k-', linewidth=2)
     ax2.set_xlabel('Temps (annees)')
